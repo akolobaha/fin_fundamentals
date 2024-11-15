@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
@@ -10,6 +11,8 @@ type Config struct {
 	RabbitPassword string `env:"RABBIT_PASSWORD"`
 	RabbitHost     string `env:"RABBIT_HOST"`
 	RabbitPort     string `env:"RABBIT_PORT"`
+	RabbitQueue    string `env:"RABBIT_QUEUE"`
+	RabbitDsn      string
 }
 
 func Parse(s string) (*Config, error) {
@@ -18,5 +21,13 @@ func Parse(s string) (*Config, error) {
 		return nil, err
 	}
 
+	c.RabbitDsn = InitRabbitDSN(c)
+
 	return c, nil
+}
+
+func InitRabbitDSN(c *Config) string {
+	return fmt.Sprintf(
+		"amqp://%s:%s@%s:%s/", c.RabbitUser, c.RabbitPassword, c.RabbitHost, c.RabbitPort,
+	)
 }

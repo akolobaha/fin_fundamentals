@@ -16,9 +16,9 @@ func main() {
 	}
 
 	rabbit := transport.New()
-	rabbit.InitConn()
+	rabbit.InitConn(cfg)
 	defer rabbit.ConnClose()
-	rabbit.DeclareQueue("tickers")
+	rabbit.DeclareQueue(cfg.RabbitQueue)
 
 	for _, ticker := range entity.Tickers {
 		uri := commands.GetSmartLabUri(cfg.SourceUrl, ticker, entity.REPORT_MSFO)

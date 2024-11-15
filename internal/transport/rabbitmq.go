@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"fin_fundamentals/internal/config"
 	"github.com/streadway/amqp"
 	"log"
 )
@@ -14,9 +15,9 @@ func New() *Rabbitmq {
 	return &Rabbitmq{}
 }
 
-func (rabbit *Rabbitmq) InitConn() {
+func (rabbit *Rabbitmq) InitConn(cfg *config.Config) {
 	// Установите соединение с RabbitMQ
-	conn, err := amqp.Dial("amqp://user:password@localhost:5672/")
+	conn, err := amqp.Dial(cfg.RabbitDsn)
 	if err != nil {
 		log.Fatalf("Failed to connect to RabbitMQ: %s", err)
 	}
