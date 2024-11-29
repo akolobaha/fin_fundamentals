@@ -21,11 +21,16 @@ func main() {
 	rabbit.DeclareQueue(cfg.RabbitQueue)
 
 	for _, ticker := range entity.Tickers {
-		uri := commands.GetSmartLabUri(cfg.SourceUrl, ticker, entity.REPORT_MSFO)
-		data := commands.ScrapSmartLabSecurity(uri)
+		for _, method := range []string{entity.REPORT_RSBU, entity.REPORT_MSFO} {
+			uri := commands.GetSmartLabUri(cfg.SourceUrl, ticker, method)
+			data := commands.ScrapSmartLabSecurity(uri, ticker, method)
 
-		jsonData := entity.FundamentalToJson(data)
-		rabbit.SendMsg(jsonData)
+			for header, item := range data {
+				jsonData := entity.FundamentalToJson(item)
+
+				rabbit.SendMsg(jsonData, header)
+			}
+		}
 	}
 
 }

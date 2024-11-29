@@ -5,32 +5,46 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"log"
+	"log/slog"
 	"net/http"
 	"reflect"
 	"strings"
 )
 
-func GetSmartLabUri(url string, ticker string, repMethod entity.ReportMethod) string {
+func GetSmartLabUri(url string, ticker string, repMethod string) string {
 	return fmt.Sprintf("%s%s/f/q/%s/", url, ticker, repMethod)
 }
 
-func ScrapSmartLabSecurity(uri string) map[string]entity.Fundamental {
+func ScrapSmartLabSecurity(uri string, ticker string, reportMethod string) map[entity.FundamentalHeader]entity.Fundamental {
 	res, err := http.Get(uri)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer res.Body.Close()
+
+	//file, err := os.OpenFile("logfile.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//defer file.Close()
+	//
+	//log.SetOutput(file)
+
 	if res.StatusCode != 200 {
-		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+		slog.Error("status code error: ", res.StatusCode, res.Status)
 	}
 
 	// Load the HTML document
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
 	}
 
-	var fundamentals map[string]entity.Fundamental = make(map[string]entity.Fundamental)
+	if doc.Find("table.financials").Length() == 0 {
+		slog.Info(uri)
+	}
+
+	var fundamentals map[entity.FundamentalHeader]entity.Fundamental = make(map[entity.FundamentalHeader]entity.Fundamental)
 
 	doc.Find("table.financials").Each(func(i int, table *goquery.Selection) {
 		table.Find("tr.header_row td > strong").Each(func(i int, col *goquery.Selection) {
@@ -38,11 +52,12 @@ func ScrapSmartLabSecurity(uri string) map[string]entity.Fundamental {
 
 			col.Each(func(i int, headerCol *goquery.Selection) {
 				fundamentalToSet := entity.Fundamental{}
-				fundamentals[headerCol.Text()] = fundamentalToSet
+
+				reportTagParent := table.Find(`tr[field="report_url"] > td`).Eq(colEntry)
+				reportUrl, _ := reportTagParent.Find(`a`).Attr("href")
 
 				// Идет перебор атрибутов для парсинга в рамках столбца
-				t := reflect.TypeOf(fundamentals[headerCol.Text()])
-
+				t := reflect.TypeOf(entity.Fundamental{})
 				for i := 0; i < t.NumField(); i++ {
 					field := t.Field(i)
 					html := field.Tag.Get("html") // Получаем значение тега html
@@ -54,7 +69,15 @@ func ScrapSmartLabSecurity(uri string) map[string]entity.Fundamental {
 					entity.SetFundamentalValue(&fundamentalToSet, html, val, name, measure)
 				}
 
-				fundamentals[headerCol.Text()] = fundamentalToSet
+				header := entity.FundamentalHeader{
+					Ticker:       ticker,
+					Period:       "quarter",
+					ReportMethod: reportMethod,
+					PeriodType:   headerCol.Text(),
+					ReportUrl:    reportUrl,
+				}
+
+				fundamentals[header] = fundamentalToSet
 			})
 		})
 

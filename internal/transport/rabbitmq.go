@@ -2,6 +2,7 @@ package transport
 
 import (
 	"fin_fundamentals/internal/config"
+	"fin_fundamentals/internal/entity"
 	"github.com/streadway/amqp"
 	"log"
 )
@@ -51,7 +52,7 @@ func (rabbit *Rabbitmq) DeclareQueue(name string) {
 	}
 }
 
-func (rabbit *Rabbitmq) SendMsg(data []byte) {
+func (rabbit *Rabbitmq) SendMsg(data []byte, header entity.FundamentalHeader) {
 	err := rabbit.Chan.Publish(
 		"",                // обменник
 		rabbit.Queue.Name, // ключ маршрутизации (имя очереди)
@@ -59,8 +60,15 @@ func (rabbit *Rabbitmq) SendMsg(data []byte) {
 		false,             // немедленное
 		amqp.Publishing{
 			DeliveryMode: amqp.Persistent, // сохранять сообщение
-			ContentType:  "text/plain",
+			ContentType:  "text/json",
 			Body:         data,
+			Headers: amqp.Table{
+				"Period":       header.Period,
+				"Ticker":       header.Ticker,
+				"PeriodType":   header.PeriodType,
+				"ReportMethod": header.ReportMethod,
+				"ReportUrl":    header.ReportUrl,
+			},
 		})
 	if err != nil {
 		log.Fatalf("Failed to publish a message: %s", err)

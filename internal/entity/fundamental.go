@@ -6,16 +6,27 @@ import (
 )
 
 type ReportMethod string
+type PeriodType string
+type Period string
 
 const (
-	REPORT_MSFO ReportMethod = "MSFO"
-	REPORT_RSBU ReportMethod = "RSBU"
+	REPORT_MSFO       string     = "MSFO"
+	REPORT_RSBU       string     = "RSBU"
+	PERIOD_TYPE_YEAR  PeriodType = "YEAR"
+	PERIOD_TYPE_MONTH PeriodType = "MONTH"
 )
 
+type FundamentalHeader struct {
+	Ticker       string
+	ReportMethod string
+	PeriodType   string
+	Period       string
+	ReportUrl    string
+}
+
 type Fundamental struct {
-	Date               FundamentalItem `html:"date"`
-	Currency           FundamentalItem `html:"currency"`
-	ReportUrl          FundamentalItem `html:"report_url"`
+	Date               string          `html:"date"`
+	Currency           string          `html:"currency"`
 	Revenue            FundamentalItem `html:"revenue"`
 	OperatingIncome    FundamentalItem `html:"operating_income"`
 	EBITDA             FundamentalItem `html:"ebitda"`
@@ -49,10 +60,10 @@ type Fundamental struct {
 	FcfYield           FundamentalItem `html:"fcf_yield"`
 	Roe                FundamentalItem `html:"roe"`
 	Roa                FundamentalItem `html:"roa"`
-	PE                 FundamentalItem `html:"p_e"`
+	PE                 string          `html:"p_e"`
 	PFcf               FundamentalItem `html:"p_fcf"`
-	PS                 FundamentalItem `html:"p_s"`
-	PBv                FundamentalItem `html:"p_bv"`
+	PS                 string          `html:"p_s"`
+	PBv                string          `html:"p_bv"`
 	EvEbitda           FundamentalItem `html:"ev_ebitda"`
 	DebtEbitda         FundamentalItem `html:"debt_ebitda"`
 	RAndDCapex         FundamentalItem `html:"r_and_d_capex"`
@@ -68,11 +79,9 @@ type FundamentalItem struct {
 func SetFundamentalValue(f *Fundamental, htmlTag string, value interface{}, name interface{}, measure interface{}) {
 	switch htmlTag {
 	case "date":
-		f.Date = FundamentalItem{Value: value.(string), Name: name.(string), Measure: measure.(string)}
+		f.Date = value.(string)
 	case "currency":
-		f.Currency = FundamentalItem{Value: value.(string), Name: name.(string), Measure: measure.(string)}
-	case "report_url":
-		f.ReportUrl = FundamentalItem{Value: value.(string), Name: name.(string), Measure: measure.(string)}
+		f.Currency = value.(string)
 	case "revenue":
 		f.Revenue = FundamentalItem{Value: value.(string), Name: name.(string), Measure: measure.(string)}
 	case "operating_income":
@@ -140,13 +149,13 @@ func SetFundamentalValue(f *Fundamental, htmlTag string, value interface{}, name
 	case "roa":
 		f.Roa = FundamentalItem{Value: value.(string), Name: name.(string), Measure: measure.(string)}
 	case "p_e":
-		f.PE = FundamentalItem{Value: value.(string), Name: name.(string), Measure: measure.(string)}
+		f.PE = value.(string)
 	case "p_fcf":
 		f.PFcf = FundamentalItem{Value: value.(string), Name: name.(string), Measure: measure.(string)}
 	case "p_s":
-		f.PS = FundamentalItem{Value: value.(string), Name: name.(string), Measure: measure.(string)}
+		f.PS = value.(string)
 	case "p_bv":
-		f.PBv = FundamentalItem{Value: value.(string), Name: name.(string), Measure: measure.(string)}
+		f.PBv = value.(string)
 	case "ev_ebitda":
 		f.EvEbitda = FundamentalItem{Value: value.(string), Name: name.(string), Measure: measure.(string)}
 	case "debt_ebitda":
@@ -160,7 +169,7 @@ func SetFundamentalValue(f *Fundamental, htmlTag string, value interface{}, name
 	}
 }
 
-func FundamentalToJson(data map[string]Fundamental) []byte {
+func FundamentalToJson(data Fundamental) []byte {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 
