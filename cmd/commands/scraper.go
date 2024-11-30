@@ -41,7 +41,7 @@ func ScrapSmartLabSecurity(uri string, ticker string, reportMethod string) map[e
 	}
 
 	if doc.Find("table.financials").Length() == 0 {
-		slog.Info(uri)
+		slog.Error(uri)
 	}
 
 	var fundamentals map[entity.FundamentalHeader]entity.Fundamental = make(map[entity.FundamentalHeader]entity.Fundamental)
@@ -66,15 +66,20 @@ func ScrapSmartLabSecurity(uri string, ticker string, reportMethod string) map[e
 					name := strings.TrimSpace(table.Find(fmt.Sprintf(`tr[field="%s"] > th > a`, html)).Eq(0).Text())
 					measure := strings.TrimSpace(table.Find(fmt.Sprintf(`tr[field="%s"] > th > span`, html)).Eq(0).Text())
 
-					entity.SetFundamentalValue(&fundamentalToSet, html, val, name, measure)
+					err := entity.SetFundamentalValue(&fundamentalToSet, html, val, name, measure)
+					if err != nil {
+						slog.Error(err.Error())
+						//return
+					}
 				}
 
 				header := entity.FundamentalHeader{
 					Ticker:       ticker,
 					Period:       "quarter",
 					ReportMethod: reportMethod,
-					PeriodType:   headerCol.Text(),
+					Report:       headerCol.Text(),
 					ReportUrl:    reportUrl,
+					SourceUrl:    uri,
 				}
 
 				fundamentals[header] = fundamentalToSet

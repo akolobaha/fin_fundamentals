@@ -65,13 +65,16 @@ func (rabbit *Rabbitmq) SendMsg(data []byte, header entity.FundamentalHeader) {
 			Headers: amqp.Table{
 				"Period":       header.Period,
 				"Ticker":       header.Ticker,
-				"PeriodType":   header.PeriodType,
+				"Report":       header.Report,
 				"ReportMethod": header.ReportMethod,
 				"ReportUrl":    header.ReportUrl,
+				"SourceUrl":    header.SourceUrl,
 			},
 		})
 	if err != nil {
 		log.Fatalf("Failed to publish a message: %s", err)
+	} else {
+		log.Printf(" [x] Sent %s", header.Ticker, header.Report, header.ReportMethod)
 	}
 
 	//log.Printf("Sent message: %s", data)
