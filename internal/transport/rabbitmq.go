@@ -18,7 +18,7 @@ func New() *Rabbitmq {
 
 func (rabbit *Rabbitmq) InitConn(cfg *config.Config) {
 	// Установите соединение с RabbitMQ
-	conn, err := amqp.Dial(cfg.RabbitDsn)
+	conn, err := amqp.Dial(cfg.GetRabbitDSN())
 	if err != nil {
 		log.Fatalf("Failed to connect to RabbitMQ: %s", err)
 	}
@@ -77,5 +77,4 @@ func (rabbit *Rabbitmq) SendMsg(data []byte, header entity.FundamentalHeader) {
 		log.Printf(" [x] Sent %s", header.Ticker, header.Report, header.ReportMethod)
 	}
 
-	//log.Printf("Sent message: %s", data)
 }
