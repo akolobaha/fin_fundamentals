@@ -5,6 +5,7 @@ import (
 	"fin_fundamentals/internal/entity"
 	"github.com/streadway/amqp"
 	"log"
+	"log/slog"
 )
 
 type Rabbitmq struct {
@@ -74,7 +75,7 @@ func (rabbit *Rabbitmq) SendMsg(data []byte, header entity.FundamentalHeader) {
 	if err != nil {
 		log.Fatalf("Failed to publish a message: %s", err)
 	} else {
-		log.Printf(" [x] Sent %s", header.Ticker, header.Report, header.ReportMethod)
+		slog.Info("Message sent to RabbitMQ ", "ticker", header.Ticker, header.Report, header.ReportMethod)
 	}
 
 }

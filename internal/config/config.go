@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/ilyakaznacheev/cleanenv"
+	"log/slog"
 )
 
 type Config struct {
@@ -12,6 +13,7 @@ type Config struct {
 	RabbitHost     string `env:"RABBIT_HOST"`
 	RabbitPort     string `env:"RABBIT_PORT"`
 	RabbitQueue    string `env:"RABBIT_QUEUE"`
+	LogLevel       string `env:"LOG_LEVEL"`
 }
 
 func Parse(s string) (*Config, error) {
@@ -19,8 +21,23 @@ func Parse(s string) (*Config, error) {
 	if err := cleanenv.ReadConfig(s, c); err != nil {
 		return nil, err
 	}
-
+	setLogLevel(c.LogLevel)
 	return c, nil
+}
+
+func setLogLevel(level string) {
+	switch level {
+	case "debug":
+		slog.SetLogLoggerLevel(-4)
+	case "info":
+		slog.SetLogLoggerLevel(0)
+	case "warn":
+		slog.SetLogLoggerLevel(4)
+	case "error":
+		slog.SetLogLoggerLevel(8)
+	default:
+		slog.SetLogLoggerLevel(4)
+	}
 }
 
 func (c *Config) GetRabbitDSN() string {

@@ -31,7 +31,7 @@ func ScrapSmartLabSecurity(uri string, ticker string, reportMethod string) map[e
 	//log.SetOutput(file)
 
 	if res.StatusCode != 200 {
-		slog.Error("status code error: ", res.StatusCode, res.Status)
+		slog.Error("status code error", "error", fmt.Sprintf("code: %d, status: %s", res.StatusCode, res.Status))
 	}
 
 	// Load the HTML document
