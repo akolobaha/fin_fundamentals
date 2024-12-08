@@ -1,10 +1,9 @@
-package commands
+package scraper
 
 import (
 	"fin_fundamentals/internal/entity"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	"log"
 	"log/slog"
 	"net/http"
 	"reflect"
@@ -18,7 +17,7 @@ func GetSmartLabUri(url string, ticker string, repMethod string) string {
 func ScrapSmartLabSecurity(uri string, ticker string, reportMethod string) map[entity.FundamentalHeader]entity.Fundamental {
 	res, err := http.Get(uri)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
 	}
 	defer res.Body.Close()
 

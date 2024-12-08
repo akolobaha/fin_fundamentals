@@ -4,16 +4,18 @@ import (
 	"fmt"
 	"github.com/ilyakaznacheev/cleanenv"
 	"log/slog"
+	"time"
 )
 
 type Config struct {
-	SourceUrl      string `env:"SOURCE_URL"`
-	RabbitUser     string `env:"RABBIT_USER"`
-	RabbitPassword string `env:"RABBIT_PASSWORD"`
-	RabbitHost     string `env:"RABBIT_HOST"`
-	RabbitPort     string `env:"RABBIT_PORT"`
-	RabbitQueue    string `env:"RABBIT_QUEUE"`
-	LogLevel       string `env:"LOG_LEVEL"`
+	SourceUrl      string      `env:"SOURCE_URL"`
+	RabbitUser     string      `env:"RABBIT_USER"`
+	RabbitPassword string      `env:"RABBIT_PASSWORD"`
+	RabbitHost     string      `env:"RABBIT_HOST"`
+	RabbitPort     string      `env:"RABBIT_PORT"`
+	RabbitQueue    string      `env:"RABBIT_QUEUE"`
+	LogLevel       string      `env:"LOG_LEVEL"`
+	TickInterval   time.Ticker `env:"TICK_INTERVAL"`
 }
 
 func Parse(s string) (*Config, error) {

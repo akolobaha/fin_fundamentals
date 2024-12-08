@@ -1,10 +1,15 @@
 package main
 
 import (
+	"context"
 	"fin_fundamentals/cmd/commands"
 	"fin_fundamentals/internal/config"
-	"fin_fundamentals/internal/entity"
 	"fin_fundamentals/internal/transport"
+	"log/slog"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 const defaultEnvFilePath = ".env"
@@ -20,16 +25,30 @@ func main() {
 	defer rabbit.ConnClose()
 	rabbit.DeclareQueue(cfg.RabbitQueue)
 
-	for _, ticker := range entity.Tickers {
-		for _, method := range []string{entity.REPORT_RSBU, entity.REPORT_MSFO} {
-			uri := commands.GetSmartLabUri(cfg.SourceUrl, ticker, method)
-			data := commands.ScrapSmartLabSecurity(uri, ticker, method)
+	ctx, cancel := context.WithCancel(context.Background())
 
-			for header, item := range data {
-				jsonData := entity.FundamentalToJson(item)
+	go func() {
+		exit := make(chan os.Signal, 1)
+		signal.Notify(exit, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
+		<-exit
+		cancel()
+	}()
 
-				rabbit.SendMsg(jsonData, header)
-			}
+	timeTicker := time.NewTicker(100000)
+	defer timeTicker.Stop()
+
+	slog.Info("Сервис сбора отчетности запущен")
+	commands.RunParser(cfg, rabbit)
+
+	for {
+		select {
+		case <-cfg.TickInterval.C:
+			commands.RunParser(cfg, rabbit)
+		case <-ctx.Done():
+			rabbit.ConnClose()
+			timeTicker.Stop()
+			slog.Info("Сбор фундаментальных данных остановлен")
+			return
 		}
 	}
 
