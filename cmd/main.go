@@ -38,12 +38,12 @@ func main() {
 	defer timeTicker.Stop()
 
 	slog.Info("Сервис сбора отчетности запущен")
-	commands.RunParser(cfg, rabbit)
+	commands.RunParser(ctx, cfg, rabbit)
 
 	for {
 		select {
 		case <-cfg.TickInterval.C:
-			commands.RunParser(cfg, rabbit)
+			commands.RunParser(ctx, cfg, rabbit)
 		case <-ctx.Done():
 			rabbit.ConnClose()
 			timeTicker.Stop()
