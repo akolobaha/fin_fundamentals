@@ -17,14 +17,14 @@ var (
 			Name: "parsing_errors_total",
 			Help: "Parsing error",
 		},
-		[]string{"from", "issue"},
+		[]string{"message"},
 	)
 	FundamentalSuccessCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "parsing_success_total",
 			Help: "Parsing success",
 		},
-		[]string{"from", "message"},
+		[]string{"message"},
 	)
 )
 

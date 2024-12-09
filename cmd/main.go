@@ -26,7 +26,6 @@ func main() {
 	}
 
 	monitoring.RunPrometheusServer(cfg.GetPrometheusURL())
-	defer monitoring.StopPrometheusServer(ctx)
 
 	rabbit := transport.New()
 	rabbit.InitConn(cfg)
