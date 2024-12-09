@@ -1,10 +1,11 @@
 package scraper
 
 import (
+	"errors"
 	"fin_fundamentals/internal/entity"
+	"fin_fundamentals/internal/log"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	"log/slog"
 	"net/http"
 	"reflect"
 	"strings"
@@ -17,7 +18,7 @@ func GetSmartLabUri(url string, ticker string, repMethod string) string {
 func ScrapSmartLabSecurity(uri string, ticker string, reportMethod string) map[entity.FundamentalHeader]entity.Fundamental {
 	res, err := http.Get(uri)
 	if err != nil {
-		slog.Error(err.Error())
+		log.Error("Ошбика http запроса:", err)
 	}
 	defer res.Body.Close()
 
@@ -30,17 +31,17 @@ func ScrapSmartLabSecurity(uri string, ticker string, reportMethod string) map[e
 	//log.SetOutput(file)
 
 	if res.StatusCode != 200 {
-		slog.Error("status code error", "error", fmt.Sprintf("code: %d, status: %s", res.StatusCode, res.Status))
+		log.Error("status code error", errors.New("status code is not 200"))
 	}
 
 	// Load the HTML document
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
-		slog.Error(err.Error())
+		log.Error("Ошибка парсинга html", err)
 	}
 
 	if doc.Find("table.financials").Length() == 0 {
-		slog.Error(uri)
+		log.Error("данные для парсинга не найдены на странице", errors.New(""))
 	}
 
 	var fundamentals map[entity.FundamentalHeader]entity.Fundamental = make(map[entity.FundamentalHeader]entity.Fundamental)
@@ -67,8 +68,7 @@ func ScrapSmartLabSecurity(uri string, ticker string, reportMethod string) map[e
 
 					err := entity.SetFundamentalValue(&fundamentalToSet, html, val, name, measure)
 					if err != nil {
-						slog.Error(err.Error())
-						//return
+						log.Error("Ошибка при наполнении сущности", err)
 					}
 				}
 

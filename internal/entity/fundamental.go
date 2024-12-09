@@ -121,7 +121,6 @@ func convertStringBillionToInt(value string, measure string) (uint64, error) {
 func FundamentalToJson(data Fundamental) []byte {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-
 	}
 	return jsonData
 }

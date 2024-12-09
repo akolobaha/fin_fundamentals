@@ -16,6 +16,8 @@ type Config struct {
 	RabbitQueue    string      `env:"RABBIT_QUEUE"`
 	LogLevel       string      `env:"LOG_LEVEL"`
 	TickInterval   time.Ticker `env:"TICK_INTERVAL"`
+	PrometheusPort string      `env:"PROMETHEUS_PORT"`
+	PrometheusHost string      `env:"PROMETHEUS_HOST"`
 }
 
 func Parse(s string) (*Config, error) {
@@ -45,5 +47,11 @@ func setLogLevel(level string) {
 func (c *Config) GetRabbitDSN() string {
 	return fmt.Sprintf(
 		"amqp://%s:%s@%s:%s/", c.RabbitUser, c.RabbitPassword, c.RabbitHost, c.RabbitPort,
+	)
+}
+
+func (c *Config) GetPrometheusURL() string {
+	return fmt.Sprintf(
+		"%s:%s", c.PrometheusHost, c.PrometheusPort,
 	)
 }
